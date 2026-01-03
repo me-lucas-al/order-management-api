@@ -29,7 +29,9 @@ export const register = async (req: Request, res: Response) => {
     }
 
     if (error.message === "Usuário já existente") {
-      return res.status(400).json({ error: error.message });
+      return res.status(409).json({
+        error: "Dados inválidos",
+      });
     }
 
     console.error("Erro no Register:", error);

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt"; 
-import User from "../models/user";
+import User from "../database/models/user";
 import type { RegisterSchemaType } from "../schemas/register";
 import type { LoginSchemaType } from "../schemas/login";
 import { generateToken } from "../utils/jwt";
