@@ -1,51 +1,67 @@
 import type { Request, Response } from "express";
+import { ZodError } from "zod";
 import { AuthService } from "../services/auth-service";
+import { registerSchema } from "../schemas/register";
+import { loginSchema } from "../schemas/login";
+import type { RegisterSchemaType } from "../schemas/register";
+import type { LoginSchemaType } from "../schemas/login";
 
 const authService = new AuthService();
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { user, token } = await authService.register(req.body);
+    const data: RegisterSchemaType = registerSchema.parse(req.body);
 
-    const userResponse = user.toObject();
+    const { user, token } = await authService.register(data);
+
     return res.status(201).json({
       user: {
-        _id: userResponse._id,
-        email: userResponse.email,
+        _id: user._id,
+        email: user.email,
       },
       token,
     });
   } catch (error: any) {
-    console.error("Erro no Register:", error);
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        error: "Dados inválidos",
+      });
+    }
 
-    if (error.message === "User already exists") {
+    if (error.message === "Usuário já existente") {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Erro no Register:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { user, token } = await authService.login(req.body);
+    const data: LoginSchemaType = loginSchema.parse(req.body);
 
-    const userResponse = user.toObject();
+    const { user, token } = await authService.login(data);
 
     return res.status(200).json({
       user: {
-        _id: userResponse._id,
-        email: userResponse.email,
+        _id: user._id,
+        email: user.email,
       },
       token,
     });
   } catch (error: any) {
-    console.error("Erro no Login:", error);
-
-    if (error.message === "Invalid credentials") {
-      return res.status(401).json({ error: error.message });
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        error: "Dados inválidos",
+      });
     }
 
-    return res.status(500).json({ error: "Internal Server Error" });
+    if (error.message === "Credenciais Inválidas") {
+      return res.status(401).json({ error: "E-mail ou senha incorretos" });
+    }
+
+    console.error("Erro no Login:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
