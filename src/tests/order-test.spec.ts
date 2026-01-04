@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest"
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest"
+
+vi.mock("../schemas/env", () => ({
+  env: {
+    JWT_SECRET: "test-secret",
+    PORT: "3000",
+    MONGO_URI: "mongodb://mock" 
+  }
+}))
+
 import request from "supertest"
 import mongoose from "mongoose"
 import { MongoMemoryServer } from "mongodb-memory-server"
@@ -7,7 +16,6 @@ import User from "../database/models/user"
 import { generateToken } from "../utils/jwt"
 
 process.env.JWT_SECRET = "test-secret"
-process.env.PORT = "3000"
 
 describe("Order Integration", () => {
   let mongoServer: MongoMemoryServer
@@ -23,17 +31,22 @@ describe("Order Integration", () => {
 
   afterAll(async () => {
     await mongoose.disconnect()
-    if (mongoServer) await mongoServer.stop()
+    if (mongoServer) {
+      await mongoServer.stop()
+    }
   })
 
   beforeEach(async () => {
-    if (mongoose.connection.db) await mongoose.connection.db.dropDatabase()
+    if (mongoose.connection.db) {
+      await mongoose.connection.db.dropDatabase()
+    }
     
     const user = await User.create({
       email: "tester@example.com",
       password: "hashedpassword"
     })
     userId = user._id.toString()
+    
     token = generateToken(userId)
   })
 
@@ -92,11 +105,6 @@ describe("Order Integration", () => {
     })
 
     it("should fail to skip states CREATED -> COMPLETED", async () => {
-       // Manualmente força estado para pular etapa se fosse possível via endpoint, 
-       // mas aqui testamos a lógica chamando advance duas vezes ou checando erro lógico se tentasse forçar.
-       // Como o advance não recebe parametros, ele só vai pro próximo.
-       // Vamos testar se ele impede avanço a partir de COMPLETED.
-       
        const createRes = await request(app)
         .post("/orders")
         .set("Authorization", `Bearer ${token}`)
@@ -109,12 +117,9 @@ describe("Order Integration", () => {
       
       const orderId = createRes.body._id
       
-      // CREATED -> ANALYSIS
       await request(app).patch(`/orders/${orderId}/advance`).set("Authorization", `Bearer ${token}`)
-      // ANALYSIS -> COMPLETED
       await request(app).patch(`/orders/${orderId}/advance`).set("Authorization", `Bearer ${token}`)
       
-      // Tentar passar de COMPLETED
       const response = await request(app)
         .patch(`/orders/${orderId}/advance`)
         .set("Authorization", `Bearer ${token}`)
