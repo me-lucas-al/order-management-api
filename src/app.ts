@@ -1,7 +1,9 @@
+import "dotenv/config"
 import express, { Express } from "express"
 import swaggerUi from "swagger-ui-express"
 import { swaggerDocument } from "./swagger"
 import authRoutes from "./routes/auth-routes"
+import orderRoutes from "./routes/order-routes"
 
 export const app: Express = express()
 
@@ -13,3 +15,4 @@ app.get("/", (req, res) => {
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use("/auth", authRoutes)
+app.use("/orders", orderRoutes)
