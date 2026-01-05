@@ -164,5 +164,3 @@ Regras:
 * Regras de negócio desacopladas do framework
 * Camadas bem definidas (controllers, use cases, repositories)
 * Código testável e escalável
-
-Só mandar 🚀
