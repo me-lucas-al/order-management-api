@@ -1,190 +1,168 @@
-# 📦 Desafio Técnico Backend – API de Gestão de Pedidos
+# 📦 Order Management API
 
-## 📌 Visão Geral
+API RESTful para **gestão de pedidos e autenticação**, desenvolvida com **Node.js, Express, TypeScript e MongoDB**.
 
-Este projeto consiste em uma API backend desenvolvida para resolver um desafio técnico com foco em **organização de código, domínio de TypeScript e implementação de regras de negócio**, utilizando **Node.js, Express, MongoDB (Mongoose) e TypeScript**.
+O projeto segue os princípios de **Clean Architecture** e **SOLID**, com foco em:
 
-A solução foi pensada com base em **boas práticas de arquitetura**, separação de responsabilidades e foco em **código limpo e manutenível**, simulando um cenário real de produção.
-
----
-
-## 🧠 Decisões e Conceitos Utilizados
-
-* Arquitetura em camadas (routes → controllers → services → models)
-* Regras de negócio centralizadas na camada de serviço
-* Tipagem forte com TypeScript (enums e interfaces)
-* Controle explícito do ciclo de vida dos pedidos (state machine)
-* Autenticação baseada em JWT
-* Testes unitários focados em regras de negócio (Vitest)
+* Separação de responsabilidades
+* Tipagem forte
+* Regras de negócio bem definidas
+* Testes automatizados e isolados
 
 ---
 
-## 🏗️ Estrutura do Projeto
+## 🚀 Tecnologias Utilizadas
 
-```
-src/
-├── modules/
-│   ├── auth/
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   ├── auth.routes.ts
-│   │   └── auth.schema.ts
-│   ├── orders/
-│   │   ├── order.controller.ts
-│   │   ├── order.service.ts
-│   │   ├── order.routes.ts
-│   │   ├── order.model.ts
-│   │   ├── order.types.ts
-│   │   └── order.schema.ts
-├── shared/
-│   ├── middlewares/
-│   │   └── auth.middleware.ts
-│   ├── errors/
-│   │   └── AppError.ts
-│   └── database/
-│       └── mongoose.ts
-├── app.ts
-└── server.ts
-```
+* **Runtime:** Node.js (v20)
+* **Linguagem:** TypeScript
+* **Framework:** Express
+* **Banco de Dados:** MongoDB (Mongoose)
+* **Validação:** Zod
+* **Testes:** Vitest, Supertest, MongoDB Memory Server
+* **Infraestrutura:** Docker & Docker Compose
+* **Documentação:** Swagger (OpenAPI)
 
 ---
 
-## 🔐 Autenticação
+## 🛠️ Como Executar o Projeto
 
-A API utiliza **JWT (JSON Web Token)** para autenticação.
+Você pode executar o projeto **de duas formas**:
 
-### Funcionalidades:
+* Usando **Docker** (recomendado)
+* Usando **dependências locais** (Node + MongoDB)
 
-* Registro de usuários com senha criptografada
-* Login retornando token JWT
-* Middleware de autenticação para proteger as rotas de pedidos
-
-### Rotas protegidas:
-
-Todas as rotas sob `/orders` exigem um token JWT válido.
+Escolha a que melhor se encaixa no seu ambiente.
 
 ---
 
-## 📦 Gestão de Pedidos
+## 🐳 Opção 1: Executar com Docker (Recomendado)
 
-### Estrutura do Pedido
+Não é necessário instalar Node.js ou MongoDB localmente.
 
-Cada pedido contém:
+### Pré-requisitos
 
-* `lab`, `patient`, `customer` (strings)
-* `state`: `CREATED → ANALYSIS → COMPLETED`
-* `status`: `ACTIVE | DELETED`
-* `services` (array obrigatório)
+* Docker
+* Docker Compose
 
-Cada serviço possui:
-
-* `name`
-* `value`
-* `status`: `PENDING | DONE`
-
----
-
-## ✅ Regras de Negócio Implementadas
-
-### Criação de Pedido
-
-* Não é permitido criar pedidos sem serviços
-* O valor total dos serviços deve ser maior que zero
-* Valores padrão ao criar:
-
-  * `state = CREATED`
-  * `status = ACTIVE`
-
-### Fluxo de Estados do Pedido
-
-O ciclo de vida do pedido segue uma ordem **estritamente controlada**:
-
-```
-CREATED → ANALYSIS → COMPLETED
-```
-
-Regras aplicadas:
-
-* Não é permitido pular etapas
-* Não é permitido retroceder estados
-* Pedidos concluídos não podem avançar
-
-A transição de estado é realizada pelo endpoint:
-
-```
-PATCH /orders/:id/advance
-```
-
-Toda a validação ocorre na camada de serviço.
-
----
-
-## 📄 Resumo dos Endpoints
-
-### Autenticação
-
-* `POST /auth/register`
-* `POST /auth/login`
-
-### Pedidos
-
-* `POST /orders` – Criação de pedido
-* `GET /orders` – Listagem com paginação e filtro por estado
-* `PATCH /orders/:id/advance` – Avanço de estado do pedido
-
----
-
-## 🧪 Testes (Vitest)
-
-Foram implementados **testes unitários** focados na principal regra de negócio do sistema:
-o controle do fluxo de estados do pedido.
-
-Os testes garantem:
-
-* Transições válidas de estado
-* Bloqueio de transições inválidas
-* Impedimento de avanço após o estado `COMPLETED`
-
-Os testes são independentes da camada HTTP e do banco de dados.
-
----
-
-## 🧰 Tecnologias Utilizadas
-
-* Node.js
-* Express
-* TypeScript
-* MongoDB + Mongoose
-* JWT
-* Vitest
-* Docker (opcional)
-
----
-
-## 🚀 Como Executar o Projeto
+### Subir a aplicação
 
 ```bash
+docker compose up -d
+```
+
+📌 Serviços disponíveis:
+
+* **API:** [http://localhost:3000](http://localhost:3000)
+* **MongoDB Express:** [http://localhost:8081](http://localhost:8081)
+
+---
+
+## 💻 Opção 2: Executar com Dependências Locais
+
+### Pré-requisitos
+
+* Node.js v20
+* MongoDB (local ou via Docker)
+
+### Instalar dependências
+
+```bash
+pnpm install
+# ou
 npm install
+```
+
+### Configurar variáveis de ambiente
+
+Crie um arquivo `.env` baseado em `.env.example`.
+
+### Subir apenas o MongoDB via Docker (opcional)
+
+Caso não tenha MongoDB instalado localmente:
+
+```bash
+docker compose up mongo -d
+```
+
+### Iniciar a aplicação
+
+```bash
+pnpm dev
+# ou
 npm run dev
 ```
 
-Para executar os testes:
+---
+
+## 🧪 Rodando os Testes
+
+Os testes utilizam **mongodb-memory-server**, portanto:
+
+* Não dependem de MongoDB externo
+* Não afetam dados reais
+
+### Executar testes
 
 ```bash
+pnpm test
+# ou
 npm run test
+```
+
+✔️ Testes de integração
+✔️ Banco em memória
+✔️ Ambiente totalmente isolado
+
+---
+
+## 📚 Documentação da API (Swagger)
+
+A documentação interativa é gerada automaticamente com a aplicação em execução.
+
+📎 Acesse:
+
+```
+http://localhost:3000/docs
 ```
 
 ---
 
-## 📌 Considerações Finais
+## 📌 Principais Rotas
 
-Esta solução foi desenvolvida priorizando:
+| Método | Rota                | Descrição                            | Auth |
+| ------ | ------------------- | ------------------------------------ | ---- |
+| GET    | /health             | Health Check                         | ❌    |
+| POST   | /auth/register      | Registrar novo usuário               | ❌    |
+| POST   | /auth/login         | Login (retorna JWT)                  | ❌    |
+| POST   | /orders             | Criar pedido                         | ✅    |
+| GET    | /orders             | Listar pedidos (filtros e paginação) | ✅    |
+| PATCH  | /orders/:id/advance | Avançar status do pedido             | ✅    |
 
-* Clareza de código
-* Correta aplicação das regras de negócio
-* Escalabilidade
-* Manutenibilidade
+---
 
-O objetivo foi entregar uma solução **orientada a produção**, e não apenas atender aos requisitos mínimos do desafio.
+## 🧠 Regras de Negócio
 
-É só falar.
+### 🔄 Fluxo de Estados do Pedido
+
+O fluxo do pedido é **estrito e unidirecional**:
+
+```
+CREATED ➝ ANALYSIS ➝ COMPLETED
+```
+
+Regras:
+
+* ❌ Não é permitido pular etapas
+* ❌ Não é permitido retroceder
+* ❌ Pedidos não podem ter valor total igual a zero
+
+---
+
+## 🧩 Arquitetura
+
+* Clean Architecture
+* Regras de negócio desacopladas do framework
+* Camadas bem definidas (controllers, use cases, repositories)
+* Código testável e escalável
+
+Só mandar 🚀
